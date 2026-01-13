@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر الأناقة 3D | تسوق أفضل المنتجات</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="database.js"></script>
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        
+        /* 3D Scene Setup */
+        .scene-3d {
+            perspective: 1500px;
+            transform-style: preserve-3d;
+        }
+        
+        /* 3D Card Effect */
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.1),
+                0 20px 50px rgba(102, 126, 234, 0.1);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(-5deg);
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.2),
+                0 40px 80px rgba(102, 126, 234, 0.2),
+                0 0 0 1px rgba(255,255,255,0.1);
+        }
+        
+        /* Product Card 3D */
+        .product-3d {
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.1),
+                0 5px 15px rgba(0,0,0,0.07),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        
+        .product-3d:hover {
+            transform: translateY(-20px) rotateX(10deg) scale(1.02);
+            box-shadow: 
+                0 40px 80px rgba(102, 126, 234, 0.25),
+                0 20px 40px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        
+        .product-3d::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .product-3d:hover .product-img {
+            transform: translateZ(30px) scale(1.1);
+        }
+        
+        .product-3d:hover .quick-actions-3d {
+            opacity: 1;
+            transform: translateZ(50px) translateY(0);
+        }
+        
+        .quick-actions-3d {
+            opacity: 0;
+            transform: translateZ(30px) translateY(20px);
+            transition: all 0.4s ease;
+        }
+        
+        /* 3D Button */
+        .btn-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            box-shadow: 
+                0 6px 20px rgba(102, 126, 234, 0.4),
+                0 3px 6px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 15px 40px rgba(102, 126, 234, 0.5),
+                0 8px 16px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        
+        .btn-3d:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+        
+        /* 3D Category Card */
+        .category-3d {
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+            background: linear-gradient(145deg, #ffffff 0%, #f0f4ff 100%);
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.08),
+                0 5px 15px rgba(102, 126, 234, 0.08),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+        
+        .category-3d:hover {
+            transform: translateY(-20px) rotateY(-10deg) rotateX(5deg);
+            box-shadow: 
+                30px 30px 60px rgba(0,0,0,0.15),
+                0 0 0 1px rgba(102, 126, 234, 0.1);
+        }
+        
+        .category-3d:hover .category-icon {
+            transform: translateZ(40px) rotateY(15deg) scale(1.1);
+        }
+        
+        .category-icon {
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.2),
+                inset 0 2px 0 rgba(255,255,255,0.3);
+        }
+        
+        /* Floating Animation */
+        @keyframes float-3d {
+            0%, 100% { transform: translateY(0) rotateX(0) rotateY(0); }
+            25% { transform: translateY(-10px) rotateX(2deg) rotateY(2deg); }
+            75% { transform: translateY(-5px) rotateX(-2deg) rotateY(-2deg); }
+        }
+        
+        .float-3d {
+            animation: float-3d 6s ease-in-out infinite;
+        }
+        
+        /* Glassmorphism 3D */
+        .glass-3d {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Hero 3D Background */
+        .hero-3d {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-3d::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(238, 130, 238, 0.2) 0%, transparent 40%);
+            animation: rotate-bg 30s linear infinite;
+        }
+        
+        @keyframes rotate-bg {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 3D Floating Shapes */
+        .shape-3d {
+            position: absolute;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+            filter: blur(40px);
+            animation: morph 15s ease-in-out infinite;
+        }
+        
+        @keyframes morph {
+            0%, 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(0deg) scale(1); }
+            25% { border-radius: 58% 42% 75% 25% / 76% 46% 54% 24%; }
+            50% { border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%; transform: rotate(180deg) scale(1.1); }
+            75% { border-radius: 33% 67% 58% 42% / 63% 68% 32% 37%; }
+        }
+        
+        /* 3D Badge */
+        .badge-3d {
+            transform-style: preserve-3d;
+            box-shadow: 
+                0 4px 15px rgba(239, 68, 68, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.3),
+                inset 0 -2px 0 rgba(0,0,0,0.1);
+            animation: pulse-3d 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-3d {
+            0%, 100% { transform: scale(1) translateZ(0); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+            50% { transform: scale(1.05) translateZ(10px); box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6); }
+        }
+        
+        /* 3D Input */
+        .input-3d {
+            box-shadow: 
+                inset 0 3px 6px rgba(0,0,0,0.05),
+                0 2px 4px rgba(0,0,0,0.02),
+                0 0 0 1px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .input-3d:focus {
+            box-shadow: 
+                inset 0 1px 3px rgba(102, 126, 234, 0.1),
+                0 4px 12px rgba(102, 126, 234, 0.15),
+                0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        
+        /* 3D Navigation */
+        .nav-3d {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 10px 40px rgba(0,0,0,0.08),
+                0 2px 10px rgba(0,0,0,0.04),
+                inset 0 -1px 0 rgba(0,0,0,0.05);
+        }
+        
+        /* 3D Icon Button */
+        .icon-btn-3d {
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 12px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+        
+        .icon-btn-3d:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 
+                0 8px 20px rgba(102, 126, 234, 0.2),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        
+        /* 3D Timer */
+        .timer-3d {
+            background: linear-gradient(145deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3),
+                inset 0 -1px 0 rgba(0,0,0,0.1);
+        }
+        
+        /* 3D Footer */
+        .footer-3d {
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+            position: relative;
+        }
+        
+        .footer-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent);
+        }
+        
+        /* Testimonial 3D */
+        .testimonial-3d {
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            background: linear-gradient(145deg, #ffffff, #f8f9ff);
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.08),
+                0 5px 15px rgba(0,0,0,0.04);
+        }
+        
+        .testimonial-3d:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 
+                0 30px 60px rgba(102, 126, 234, 0.15),
+                0 15px 30px rgba(0,0,0,0.08);
+        }
+        
+        /* 3D Stars */
+        .star-3d {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            filter: drop-shadow(0 2px 3px rgba(250, 204, 21, 0.4));
+        }
+        
+        /* 3D Sale Banner */
+        .sale-banner-3d {
+            transform-style: preserve-3d;
+            animation: float-banner 4s ease-in-out infinite;
+        }
+        
+        @keyframes float-banner {
+            0%, 100% { transform: perspective(500px) rotateY(-5deg); }
+            50% { transform: perspective(500px) rotateY(5deg); }
+        }
+        
+        /* Custom Scrollbar 3D */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { 
+            background: linear-gradient(180deg, #f1f1f1, #e1e1e1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            border-radius: 10px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Gradient Text 3D */
+        .text-3d {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(2px 2px 4px rgba(102, 126, 234, 0.3));
+        }
+        
+        /* Cart Sidebar 3D */
+        .cart-3d {
+            box-shadow: 
+                -20px 0 60px rgba(0,0,0,0.2),
+                -5px 0 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Shine Effect */
+        .shine {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent 0%,
+                rgba(255,255,255,0.3) 50%,
+                transparent 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 4s ease-in-out infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            20%, 100% { transform: translateX(100%) rotate(30deg); }
+        }
+        
+        /* Parallax layers */
+        .parallax-layer {
+            will-change: transform;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Top Bar -->
+    <div class="bg-gradient-to-l from-gray-900 via-gray-800 to-gray-900 text-white py-2 text-sm relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50"></div>
+        <div class="container mx-auto px-4 flex justify-between items-center flex-wrap gap-2 relative">
+            <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1"><i class="fas fa-phone-alt ml-1 text-purple-400"></i> 920012345</span>
+                <span class="flex items-center gap-1"><i class="fas fa-envelope ml-1 text-purple-400"></i> info@elegance.com</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:text-purple-400 transition transform hover:scale-110"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="hover:text-purple-400 transition transform hover:scale-110"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="hover:text-purple-400 transition transform hover:scale-110"><i class="fab fa-instagram"></i></a>
+                <span class="border-r border-gray-600 h-4"></span>
+                <a href="#" class="hover:text-purple-400 transition flex items-center gap-1">
+                    <i class="fas fa-truck text-xs"></i> تتبع طلبك
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header 3D -->
+    <header class="nav-3d sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Logo 3D -->
+                <div class="flex items-center gap-3 group cursor-pointer">
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 transform transition-all duration-300 group-hover:rotate-12 group-hover:scale-110">
+                        <i class="fas fa-gem text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-black text-3d">الأناقة</h1>
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-star text-yellow-400 text-[8px]"></i> تسوق بثقة
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Search Bar 3D -->
+                <div class="hidden md:flex flex-1 max-w-xl mx-8">
+                    <div class="relative w-full group">
+                        <input type="text" id="searchInput" placeholder="ابحث عن منتجات، ماركات، تصنيفات..." 
+                            class="input-3d w-full py-4 px-6 pr-14 rounded-2xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition bg-white/80 backdrop-blur">
+                        <button class="absolute left-2 top-1/2 -translate-y-1/2 btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white w-12 h-12 rounded-xl hover:shadow-lg transition">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <i class="fas fa-microphone absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-purple-600 transition"></i>
+                    </div>
+                </div>
+
+                <!-- Actions 3D -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleWishlist()" class="icon-btn-3d relative p-3 bg-white rounded-xl">
+                        <i class="far fa-heart text-xl text-gray-600"></i>
+                        <span id="wishlistCount" class="absolute -top-2 -left-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center shadow-lg shadow-red-500/30">0</span>
+                    </button>
+                    <button onclick="toggleCart()" class="icon-btn-3d relative p-3 bg-white rounded-xl">
+                        <i class="fas fa-shopping-bag text-xl text-gray-600"></i>
+                        <span id="cartCount" class="absolute -top-2 -left-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30 animate-pulse">0</span>
+                    </button>
+                    <button onclick="toggleAuth()" class="hidden md:flex items-center gap-2 btn-3d bg-gradient-to-l from-purple-600 via-indigo-600 to-purple-700 text-white px-6 py-3 rounded-xl font-bold">
+                        <i class="fas fa-user"></i>
+                        <span>حسابي</span>
+                    </button>
+                    <button onclick="toggleMobileMenu()" class="md:hidden icon-btn-3d p-3 bg-white rounded-xl">
+                        <i class="fas fa-bars text-xl text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation 3D -->
+            <nav class="hidden md:block border-t border-gray-100">
+                <ul class="flex items-center gap-8 py-4">
+                    <li><a href="#" class="relative text-gray-700 hover:text-purple-600 font-semibold transition group">
+                        الرئيسية
+                        <span class="absolute -bottom-1 right-0 w-0 h-0.5 bg-gradient-to-l from-purple-600 to-indigo-600 group-hover:w-full transition-all duration-300 rounded-full"></span>
+                    </a></li>
+                    <li class="relative group">
+                        <a href="#" class="relative text-gray-700 hover:text-purple-600 font-semibold transition flex items-center gap-1">
+                            التصنيفات <i class="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
+                        </a>
+                        <div class="absolute top-full right-0 mt-2 bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl py-4 px-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 min-w-56 z-50 border border-gray-100">
+                            <a href="#" class="flex items-center gap-3 py-3 px-4 hover:bg-purple-50 rounded-xl transition group/item">
+                                <span class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                    <i class="fas fa-laptop text-white"></i>
+                                </span>
+                                <span class="group-hover/item:text-purple-600 transition">إلكترونيات</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 py-3 px-4 hover:bg-purple-50 rounded-xl transition group/item">
+                                <span class="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/20">
+                                    <i class="fas fa-tshirt text-white"></i>
+                                </span>
+                                <span class="group-hover/item:text-purple-600 transition">أزياء</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 py-3 px-4 hover:bg-purple-50 rounded-xl transition group/item">
+                                <span class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+                                    <i class="fas fa-watch text-white"></i>
+                                </span>
+                                <span class="group-hover/item:text-purple-600 transition">ساعات ومجوهرات</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 py-3 px-4 hover:bg-purple-50 rounded-xl transition group/item">
+                                <span class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+                                    <i class="fas fa-spa text-white"></i>
+                                </span>
+                                <span class="group-hover/item:text-purple-600 transition">الصحة والجمال</span>
+                            </a>
+                        </div>
+                    </li>
+                    <li><a href="#products" class="relative text-gray-700 hover:text-purple-600 font-semibold transition group">
+                        المنتجات
+                        <span class="absolute -bottom-1 right-0 w-0 h-0.5 bg-gradient-to-l from-purple-600 to-indigo-600 group-hover:w-full transition-all duration-300 rounded-full"></span>
+                    </a></li>
+                    <li><a href="#offers" class="relative text-gray-700 hover:text-purple-600 font-semibold transition group flex items-center gap-2">
+                        <span class="relative">
+                            العروض
+                            <span class="absolute -top-3 -left-3 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">HOT</span>
+                        </span>
+                        <span class="absolute -bottom-1 right-0 w-0 h-0.5 bg-gradient-to-l from-purple-600 to-indigo-600 group-hover:w-full transition-all duration-300 rounded-full"></span>
+                    </a></li>
+                    <li><a href="#" class="relative text-gray-700 hover:text-purple-600 font-semibold transition group">
+                        الماركات
+                        <span class="absolute -bottom-1 right-0 w-0 h-0.5 bg-gradient-to-l from-purple-600 to-indigo-600 group-hover:w-full transition-all duration-300 rounded-full"></span>
+                    </a></li>
+                    <li><a href="#contact" class="relative text-gray-700 hover:text-purple-600 font-semibold transition group">
+                        اتصل بنا
+                        <span class="absolute -bottom-1 right-0 w-0 h-0.5 bg-gradient-to-l from-purple-600 to-indigo-600 group-hover:w-full transition-all duration-300 rounded-full"></span>
+                    </a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden">
+        <div class="bg-white w-80 h-full cart-3d">
+            <div class="p-5 bg-gradient-to-l from-purple-600 to-indigo-600 text-white flex justify-between items-center">
+                <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-compass"></i> القائمة</h3>
+                <button onclick="toggleMobileMenu()" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <nav class="p-4">
+                <a href="#" class="flex items-center gap-3 py-4 border-b hover:text-purple-600 transition">
+                    <i class="fas fa-home w-6 text-purple-500"></i> الرئيسية
+                </a>
+                <a href="#" class="flex items-center gap-3 py-4 border-b hover:text-purple-600 transition">
+                    <i class="fas fa-th-large w-6 text-purple-500"></i> التصنيفات
+                </a>
+                <a href="#products" class="flex items-center gap-3 py-4 border-b hover:text-purple-600 transition">
+                    <i class="fas fa-box w-6 text-purple-500"></i> المنتجات
+                </a>
+                <a href="#offers" class="flex items-center gap-3 py-4 border-b hover:text-purple-600 transition">
+                    <i class="fas fa-bolt w-6 text-purple-500"></i> العروض
+                </a>
+                <a href="#contact" class="flex items-center gap-3 py-4 border-b hover:text-purple-600 transition">
+                    <i class="fas fa-envelope w-6 text-purple-500"></i> اتصل بنا
+                </a>
+                <a href="#" class="flex items-center gap-3 py-4 hover:text-purple-600 transition">
+                    <i class="fas fa-user w-6 text-purple-500"></i> حسابي
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero Section 3D -->
+    <section class="hero-3d text-white py-24 relative overflow-hidden">
+        <!-- 3D Floating Shapes -->
+        <div class="shape-3d w-96 h-96 top-10 right-10 opacity-60"></div>
+        <div class="shape-3d w-72 h-72 bottom-20 left-20 opacity-40" style="animation-delay: -5s;"></div>
+        <div class="shape-3d w-48 h-48 top-1/2 left-1/3 opacity-30" style="animation-delay: -10s;"></div>
+        
+        <!-- Floating 3D Elements -->
+        <div class="absolute top-20 right-[10%] w-20 h-20 glass-3d rounded-2xl float-3d flex items-center justify-center" style="animation-delay: -2s;">
+            <i class="fas fa-gem text-3xl text-purple-300"></i>
+        </div>
+        <div class="absolute bottom-32 left-[15%] w-16 h-16 glass-3d rounded-2xl float-3d flex items-center justify-center" style="animation-delay: -4s;">
+            <i class="fas fa-star text-2xl text-yellow-300"></i>
+        </div>
+        <div class="absolute top-1/2 right-[5%] w-14 h-14 glass-3d rounded-full float-3d flex items-center justify-center" style="animation-delay: -1s;">
+            <i class="fas fa-heart text-xl text-pink-300"></i>
+        </div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="scene-3d">
+                    <span class="inline-flex items-center gap-2 glass-3d text-purple-200 px-5 py-2.5 rounded-full text-sm mb-6 backdrop-blur-xl">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        🔥 عروض حصرية تصل إلى 70%
+                    </span>
+                    <h2 class="text-5xl md:text-7xl font-black mb-8 leading-tight">
+                        اكتشف عالم
+                        <br>
+                        <span class="relative inline-block">
+                            <span class="bg-gradient-to-l from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-transparent">التسوق الذكي</span>
+                            <svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none">
+                                <path d="M2 10C50 4 150 0 298 8" stroke="url(#gradient)" stroke-width="4" stroke-linecap="round"/>
+                                <defs><linearGradient id="gradient"><stop stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs>
+                            </svg>
+                        </span>
+                    </h2>
+                    <p class="text-gray-300 text-xl mb-10 leading-relaxed">تسوق آلاف المنتجات الأصلية من أفضل الماركات العالمية مع ضمان الجودة والتوصيل السريع</p>
+                    <div class="flex gap-4 flex-wrap">
+                        <a href="#products" class="btn-3d bg-gradient-to-l from-purple-600 via-pink-500 to-purple-600 bg-size-200 hover:bg-right px-10 py-5 rounded-2xl font-bold text-lg flex items-center gap-2 shine">
+                            <i class="fas fa-shopping-bag"></i>
+                            تسوق الآن
+                        </a>
+                        <a href="#offers" class="glass-3d hover:bg-white/20 px-10 py-5 rounded-2xl font-bold text-lg flex items-center gap-2 transition">
+                            <i class="fas fa-fire text-orange-400"></i>
+                            عروض اليوم
+                        </a>
+                    </div>
+                    
+                    <!-- Stats 3D -->
+                    <div class="flex gap-8 mt-14">
+                        <div class="glass-3d rounded-2xl p-4 text-center min-w-[100px]">
+                            <h4 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-300">50K+</h4>
+                            <p class="text-purple-300 text-sm mt-1">منتج متوفر</p>
+                        </div>
+                        <div class="glass-3d rounded-2xl p-4 text-center min-w-[100px]">
+                            <h4 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-300">100K+</h4>
+                            <p class="text-purple-300 text-sm mt-1">عميل سعيد</p>
+                        </div>
+                        <div class="glass-3d rounded-2xl p-4 text-center min-w-[100px]">
+                            <h4 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-300">500+</h4>
+                            <p class="text-purple-300 text-sm mt-1">ماركة عالمية</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hero Image 3D -->
+                <div class="relative hidden md:block scene-3d">
+                    <div class="relative float-3d">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-600 to-pink-600 rounded-[3rem] blur-3xl opacity-30 scale-90"></div>
+                        <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600" alt="تسوق" 
+                            class="relative rounded-[3rem] shadow-2xl border-4 border-white/10 transform hover:scale-105 transition duration-500">
+                        
+                        <!-- Floating Cards -->
+                        <div class="absolute -bottom-8 -right-8 glass-3d p-5 rounded-2xl backdrop-blur-xl animate-bounce" style="animation-duration: 3s;">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-check text-white text-2xl"></i>
+                                </div>
+                                <div class="text-white">
+                                    <p class="font-bold text-lg">تم الطلب بنجاح!</p>
+                                    <p class="text-sm text-white/70">سيصلك خلال 24 ساعة</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="absolute -top-4 -left-4 glass-3d p-4 rounded-2xl backdrop-blur-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="flex -space-x-2 space-x-reverse">
+                                    <img src="https://i.pravatar.cc/40?img=1" class="w-10 h-10 rounded-full border-2 border-white">
+                                    <img src="https://i.pravatar.cc/40?img=2" class="w-10 h-10 rounded-full border-2 border-white">
+                                    <img src="https://i.pravatar.cc/40?img=3" class="w-10 h-10 rounded-full border-2 border-white">
+                                </div>
+                                <div class="text-white">
+                                    <p class="font-bold">+1000</p>
+                                    <p class="text-xs text-white/70">متسوق الآن</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wave Bottom -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#f9fafb"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Features 3D -->
+    <section class="py-16 bg-gray-50 relative">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 scene-3d">
+                <div class="card-3d bg-white rounded-3xl p-6 text-center cursor-pointer">
+                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-purple-500/30 transform -rotate-6">
+                        <i class="fas fa-truck text-white text-3xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">شحن مجاني</h4>
+                    <p class="text-sm text-gray-500 mt-2">للطلبات فوق 200 ريال</p>
+                </div>
+                <div class="card-3d bg-white rounded-3xl p-6 text-center cursor-pointer">
+                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-green-500/30 transform rotate-6">
+                        <i class="fas fa-shield-alt text-white text-3xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">ضمان الجودة</h4>
+                    <p class="text-sm text-gray-500 mt-2">منتجات أصلية 100%</p>
+                </div>
+                <div class="card-3d bg-white rounded-3xl p-6 text-center cursor-pointer">
+                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-blue-500/30 transform -rotate-3">
+                        <i class="fas fa-undo text-white text-3xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">إرجاع سهل</h4>
+                    <p class="text-sm text-gray-500 mt-2">خلال 14 يوم</p>
+                </div>
+                <div class="card-3d bg-white rounded-3xl p-6 text-center cursor-pointer">
+                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-orange-500/30 transform rotate-3">
+                        <i class="fas fa-headset text-white text-3xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">دعم 24/7</h4>
+                    <p class="text-sm text-gray-500 mt-2">نحن دائماً هنا</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories 3D -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-14">
+                <span class="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-semibold mb-3">تصفح حسب</span>
+                <h2 class="text-4xl font-black text-gray-800">التصنيفات الرئيسية</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 scene-3d">
+                <div class="category-3d rounded-3xl p-6 text-center cursor-pointer" onclick="filterByCategory('electronics')">
+                    <div class="category-icon w-24 h-24 mx-auto bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center mb-4">
+                        <i class="fas fa-laptop text-white text-4xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">إلكترونيات</h4>
+                    <p class="text-sm text-purple-500 mt-1 font-semibold">+500 منتج</p>
+                </div>
+                <div class="category-3d rounded-3xl p-6 text-center cursor-pointer" onclick="filterByCategory('fashion')">
+                    <div class="category-icon w-24 h-24 mx-auto bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center mb-4">
+                        <i class="fas fa-tshirt text-white text-4xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">أزياء</h4>
+                    <p class="text-sm text-purple-500 mt-1 font-semibold">+1200 منتج</p>
+                </div>
+                <div class="category-3d rounded-3xl p-6 text-center cursor-pointer" onclick="filterByCategory('watches')">
+                    <div class="category-icon w-24 h-24 mx-auto bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl flex items-center justify-center mb-4">
+                        <i class="fas fa-watch text-white text-4xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">ساعات</h4>
+                    <p class="text-sm text-purple-500 mt-1 font-semibold">+300 منتج</p>
+                </div>
+                <div class="category-3d rounded-3xl p-6 text-center cursor-pointer" onclick="filterByCategory('beauty')">
+                    <div class="category-icon w-24 h-24 mx-auto bg-gradient-to-br from-purple-400 to-purple-600 rounded-3xl flex items-center justify-center mb-4">
+                        <i class="fas fa-spa text-white text-4xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">الجمال</h4>
+                    <p class="text-sm text-purple-500 mt-1 font-semibold">+800 منتج</p>
+                </div>
+                <div class="category-3d rounded-3xl p-6 text-center cursor-pointer" onclick="filterByCategory('sports')">
+                    <div class="category-icon w-24 h-24 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-3xl flex items-center justify-center mb-4">
+                        <i class="fas fa-running text-white text-4xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">رياضة</h4>
+                    <p class="text-sm text-purple-500 mt-1 font-semibold">+400 منتج</p>
+                </div>
+                <div class="category-3d rounded-3xl p-6 text-center cursor-pointer" onclick="filterByCategory('home')">
+                    <div class="category-icon w-24 h-24 mx-auto bg-gradient-to-br from-red-400 to-red-600 rounded-3xl flex items-center justify-center mb-4">
+                        <i class="fas fa-home text-white text-4xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg">المنزل</h4>
+                    <p class="text-sm text-purple-500 mt-1 font-semibold">+600 منتج</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Flash Sale 3D -->
+    <section id="offers" class="py-20 bg-gradient-to-br from-purple-700 via-indigo-700 to-purple-800 text-white relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22><circle cx=%2240%22 cy=%2240%22 r=%221%22 fill=%22white%22/></svg>'); background-size: 80px 80px;"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="flex flex-wrap items-center justify-between gap-6 mb-12">
+                <div>
+                    <h2 class="text-4xl font-black flex items-center gap-4">
+                        <span class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+                            <i class="fas fa-bolt text-2xl"></i>
+                        </span>
+                        عروض البرق
+                    </h2>
+                    <p class="text-purple-200 mt-3 text-lg">احصل عليها قبل انتهاء العرض!</p>
+                </div>
+                <div class="timer-3d flex items-center gap-4 rounded-2xl p-5">
+                    <div class="text-center">
+                        <span id="hours" class="text-4xl font-black block">12</span>
+                        <p class="text-xs text-purple-200 mt-1">ساعة</p>
+                    </div>
+                    <span class="text-3xl font-light opacity-50">:</span>
+                    <div class="text-center">
+                        <span id="minutes" class="text-4xl font-black block">45</span>
+                        <p class="text-xs text-purple-200 mt-1">دقيقة</p>
+                    </div>
+                    <span class="text-3xl font-light opacity-50">:</span>
+                    <div class="text-center">
+                        <span id="seconds" class="text-4xl font-black block">30</span>
+                        <p class="text-xs text-purple-200 mt-1">ثانية</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 scene-3d">
+                <div class="product-3d rounded-3xl overflow-hidden">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" alt="ساعة" class="product-img w-full h-52 object-cover transition-transform duration-500">
+                        <span class="badge-3d absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">-40%</span>
+                    </div>
+                    <div class="p-5 bg-white">
+                        <h4 class="font-bold text-gray-800 truncate text-lg">ساعة ذكية برو</h4>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-purple-600 font-black text-xl">599 ر.س</span>
+                            <span class="text-gray-400 line-through text-sm">999 ر.س</span>
+                        </div>
+                        <button onclick="addToCart({id: 'flash1', name: 'ساعة ذكية برو', price: 599, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'})" 
+                            class="w-full mt-4 btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold">
+                            <i class="fas fa-cart-plus ml-2"></i> أضف للسلة
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="product-3d rounded-3xl overflow-hidden">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400" alt="عطر" class="product-img w-full h-52 object-cover transition-transform duration-500">
+                        <span class="badge-3d absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">-50%</span>
+                    </div>
+                    <div class="p-5 bg-white">
+                        <h4 class="font-bold text-gray-800 truncate text-lg">عطر فاخر</h4>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-purple-600 font-black text-xl">299 ر.س</span>
+                            <span class="text-gray-400 line-through text-sm">599 ر.س</span>
+                        </div>
+                        <button onclick="addToCart({id: 'flash2', name: 'عطر فاخر', price: 299, image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400'})" 
+                            class="w-full mt-4 btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold">
+                            <i class="fas fa-cart-plus ml-2"></i> أضف للسلة
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="product-3d rounded-3xl overflow-hidden">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" alt="سماعات" class="product-img w-full h-52 object-cover transition-transform duration-500">
+                        <span class="badge-3d absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">-35%</span>
+                    </div>
+                    <div class="p-5 bg-white">
+                        <h4 class="font-bold text-gray-800 truncate text-lg">سماعات لاسلكية</h4>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-purple-600 font-black text-xl">449 ر.س</span>
+                            <span class="text-gray-400 line-through text-sm">699 ر.س</span>
+                        </div>
+                        <button onclick="addToCart({id: 'flash3', name: 'سماعات لاسلكية', price: 449, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400'})" 
+                            class="w-full mt-4 btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold">
+                            <i class="fas fa-cart-plus ml-2"></i> أضف للسلة
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="product-3d rounded-3xl overflow-hidden">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" alt="حذاء" class="product-img w-full h-52 object-cover transition-transform duration-500">
+                        <span class="badge-3d absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">-60%</span>
+                    </div>
+                    <div class="p-5 bg-white">
+                        <h4 class="font-bold text-gray-800 truncate text-lg">حذاء رياضي</h4>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-purple-600 font-black text-xl">199 ر.س</span>
+                            <span class="text-gray-400 line-through text-sm">499 ر.س</span>
+                        </div>
+                        <button onclick="addToCart({id: 'flash4', name: 'حذاء رياضي', price: 199, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400'})" 
+                            class="w-full mt-4 btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold">
+                            <i class="fas fa-cart-plus ml-2"></i> أضف للسلة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section 3D -->
+    <section id="products" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap items-center justify-between gap-6 mb-12">
+                <div>
+                    <span class="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-semibold mb-3">تشكيلة متنوعة</span>
+                    <h2 class="text-4xl font-black text-gray-800">أحدث المنتجات</h2>
+                </div>
+                <div class="flex gap-3 flex-wrap">
+                    <button onclick="filterProducts('all')" class="filter-btn active btn-3d px-6 py-3 rounded-xl bg-gradient-to-l from-purple-600 to-indigo-600 text-white font-bold">الكل</button>
+                    <button onclick="filterProducts('electronics')" class="filter-btn px-6 py-3 rounded-xl bg-white text-gray-700 font-bold shadow-lg hover:shadow-xl transition">إلكترونيات</button>
+                    <button onclick="filterProducts('fashion')" class="filter-btn px-6 py-3 rounded-xl bg-white text-gray-700 font-bold shadow-lg hover:shadow-xl transition">أزياء</button>
+                    <button onclick="filterProducts('accessories')" class="filter-btn px-6 py-3 rounded-xl bg-white text-gray-700 font-bold shadow-lg hover:shadow-xl transition">اكسسوارات</button>
+                </div>
+            </div>
+
+            <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 scene-3d">
+                <!-- Products will be loaded here -->
+            </div>
+
+            <div class="text-center mt-14">
+                <button onclick="loadMoreProducts()" class="btn-3d bg-white border-3 border-purple-600 text-purple-600 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-purple-600 hover:text-white transition shadow-xl">
+                    عرض المزيد <i class="fas fa-arrow-down mr-2"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Banner Section 3D -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-8 scene-3d">
+                <div class="sale-banner-3d relative rounded-3xl overflow-hidden h-80 group cursor-pointer shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800" alt="تخفيضات" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent flex items-center">
+                        <div class="p-10">
+                            <span class="inline-block bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg shadow-red-500/30 mb-4">خصم 50%</span>
+                            <h3 class="text-4xl font-black text-white mb-3">تشكيلة الموضة</h3>
+                            <p class="text-gray-200 text-lg mb-6">أحدث صيحات الموضة العالمية</p>
+                            <button class="btn-3d bg-white text-gray-800 px-8 py-3 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition">
+                                تسوق الآن <i class="fas fa-arrow-left mr-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="sale-banner-3d relative rounded-3xl overflow-hidden h-80 group cursor-pointer shadow-2xl" style="animation-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800" alt="إلكترونيات" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent flex items-center">
+                        <div class="p-10">
+                            <span class="inline-block bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg shadow-purple-500/30 mb-4">وصل حديثاً</span>
+                            <h3 class="text-4xl font-black text-white mb-3">إلكترونيات 2024</h3>
+                            <p class="text-gray-200 text-lg mb-6">أحدث الأجهزة والتقنيات</p>
+                            <button class="btn-3d bg-white text-gray-800 px-8 py-3 rounded-xl font-bold hover:bg-purple-600 hover:text-white transition">
+                                اكتشف المزيد <i class="fas fa-arrow-left mr-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials 3D -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-14">
+                <span class="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-semibold mb-3">آراء العملاء</span>
+                <h2 class="text-4xl font-black text-gray-800">ماذا يقول عملاؤنا</h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 scene-3d">
+                <div class="testimonial-3d p-8 rounded-3xl relative">
+                    <div class="absolute -top-5 right-8 w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+                        <i class="fas fa-quote-right text-white text-xl"></i>
+                    </div>
+                    <div class="flex items-center gap-1 star-3d text-yellow-400 mb-6 mt-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">"تجربة تسوق رائعة! المنتجات أصلية 100% والتوصيل سريع جداً. أنصح الجميع بالتسوق من متجر الأناقة."</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://i.pravatar.cc/60?img=1" alt="عميل" class="w-14 h-14 rounded-2xl object-cover shadow-lg">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-lg">أحمد محمد</h4>
+                            <p class="text-sm text-purple-500">الرياض</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-3d p-8 rounded-3xl relative">
+                    <div class="absolute -top-5 right-8 w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/30">
+                        <i class="fas fa-quote-right text-white text-xl"></i>
+                    </div>
+                    <div class="flex items-center gap-1 star-3d text-yellow-400 mb-6 mt-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">"أفضل متجر للتسوق الإلكتروني! الأسعار منافسة والعروض مستمرة. خدمة العملاء ممتازة ومتعاونة."</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://i.pravatar.cc/60?img=5" alt="عميلة" class="w-14 h-14 rounded-2xl object-cover shadow-lg">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-lg">سارة العتيبي</h4>
+                            <p class="text-sm text-purple-500">جدة</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-3d p-8 rounded-3xl relative">
+                    <div class="absolute -top-5 right-8 w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30">
+                        <i class="fas fa-quote-right text-white text-xl"></i>
+                    </div>
+                    <div class="flex items-center gap-1 star-3d text-yellow-400 mb-6 mt-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">"تعاملت مع المتجر أكثر من مرة وفي كل مرة أجد الجودة والاحترافية. سياسة الاسترجاع سهلة ومرنة."</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://i.pravatar.cc/60?img=3" alt="عميل" class="w-14 h-14 rounded-2xl object-cover shadow-lg">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-lg">خالد الشمري</h4>
+                            <p class="text-sm text-purple-500">الدمام</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter 3D -->
+    <section class="py-20 bg-gradient-to-br from-purple-700 via-indigo-700 to-purple-800 relative overflow-hidden">
+        <div class="shape-3d w-72 h-72 top-0 right-0 opacity-40"></div>
+        <div class="shape-3d w-48 h-48 bottom-0 left-0 opacity-30" style="animation-delay: -7s;"></div>
+        
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <div class="max-w-3xl mx-auto">
+                <div class="w-20 h-20 mx-auto bg-white/10 backdrop-blur rounded-3xl flex items-center justify-center mb-8">
+                    <i class="fas fa-envelope-open-text text-4xl text-white"></i>
+                </div>
+                <h2 class="text-4xl font-black text-white mb-4">اشترك في نشرتنا البريدية</h2>
+                <p class="text-purple-200 text-lg mb-10">احصل على أحدث العروض والتخفيضات الحصرية مباشرة إلى بريدك الإلكتروني</p>
+                <form class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" placeholder="أدخل بريدك الإلكتروني" required
+                        class="flex-1 px-8 py-5 rounded-2xl text-gray-800 focus:outline-none focus:ring-4 focus:ring-purple-300 shadow-xl text-lg">
+                    <button type="submit" class="btn-3d bg-gradient-to-l from-gray-900 to-gray-800 text-white px-10 py-5 rounded-2xl font-bold text-lg whitespace-nowrap">
+                        اشترك الآن <i class="fas fa-paper-plane mr-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section 3D -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <span class="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-semibold mb-3">تواصل معنا</span>
+                    <h2 class="text-4xl font-black text-gray-800 mb-8">نسعد بخدمتك</h2>
+                    <div class="space-y-6">
+                        <div class="card-3d flex items-center gap-5 p-5 bg-gray-50 rounded-2xl">
+                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+                                <i class="fas fa-map-marker-alt text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-lg">العنوان</h4>
+                                <p class="text-gray-500">الرياض، المملكة العربية السعودية</p>
+                            </div>
+                        </div>
+                        <div class="card-3d flex items-center gap-5 p-5 bg-gray-50 rounded-2xl">
+                            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30">
+                                <i class="fas fa-phone text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-lg">الهاتف</h4>
+                                <p class="text-gray-500">920012345</p>
+                            </div>
+                        </div>
+                        <div class="card-3d flex items-center gap-5 p-5 bg-gray-50 rounded-2xl">
+                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                                <i class="fas fa-envelope text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-lg">البريد الإلكتروني</h4>
+                                <p class="text-gray-500">info@elegance.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-3d bg-gradient-to-br from-gray-50 to-white p-10 rounded-3xl">
+                    <form onsubmit="submitContact(event)">
+                        <div class="grid md:grid-cols-2 gap-5 mb-5">
+                            <input type="text" placeholder="الاسم" required class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition text-lg">
+                            <input type="email" placeholder="البريد الإلكتروني" required class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition text-lg">
+                        </div>
+                        <input type="text" placeholder="الموضوع" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-5 text-lg">
+                        <textarea placeholder="رسالتك" rows="5" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-5 resize-none text-lg"></textarea>
+                        <button type="submit" class="w-full btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg">
+                            إرسال الرسالة <i class="fas fa-paper-plane mr-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer 3D -->
+    <footer class="footer-3d text-white pt-20 pb-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
+                <div class="col-span-2 md:col-span-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+                            <i class="fas fa-gem text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-black">الأناقة</h3>
+                    </div>
+                    <p class="text-gray-400 mb-6 leading-relaxed">وجهتك الأولى للتسوق الإلكتروني في المملكة العربية السعودية. نقدم لك أفضل المنتجات بأفضل الأسعار.</p>
+                    <div class="flex gap-3">
+                        <a href="#" class="icon-btn-3d w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="icon-btn-3d w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="icon-btn-3d w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="icon-btn-3d w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xl mb-6">روابط سريعة</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li><a href="#" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> الرئيسية</a></li>
+                        <li><a href="#products" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> المنتجات</a></li>
+                        <li><a href="#offers" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> العروض</a></li>
+                        <li><a href="#contact" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> اتصل بنا</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xl mb-6">خدمة العملاء</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li><a href="#" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> الأسئلة الشائعة</a></li>
+                        <li><a href="#" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> سياسة الشحن</a></li>
+                        <li><a href="#" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> سياسة الاسترجاع</a></li>
+                        <li><a href="#" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> تتبع الطلب</a></li>
+                        <li><a href="admin.html" class="hover:text-purple-400 transition flex items-center gap-2"><i class="fas fa-chevron-left text-xs text-purple-500"></i> <i class="fas fa-lock text-xs ml-1"></i> لوحة التحكم</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xl mb-6">طرق الدفع</h4>
+                    <div class="flex flex-wrap gap-3 mb-8">
+                        <div class="bg-white rounded-xl p-3 px-4 shadow-lg">
+                            <i class="fab fa-cc-visa text-blue-600 text-3xl"></i>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 px-4 shadow-lg">
+                            <i class="fab fa-cc-mastercard text-red-600 text-3xl"></i>
+                        </div>
+                        <div class="bg-white rounded-xl p-3 px-4 shadow-lg">
+                            <i class="fab fa-apple-pay text-gray-800 text-3xl"></i>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-xl mb-4">حمل التطبيق</h4>
+                    <div class="flex gap-3">
+                        <a href="#" class="icon-btn-3d bg-gray-800 px-4 py-3 rounded-xl hover:bg-gray-700 transition flex items-center gap-2">
+                            <i class="fab fa-apple text-2xl"></i>
+                            <div class="text-right">
+                                <span class="text-[10px] text-gray-400 block">حمل من</span>
+                                <span class="text-sm font-bold">App Store</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500">
+                <p>© 2024 متجر الأناقة. جميع الحقوق محفوظة. صنع بـ <i class="fas fa-heart text-red-500"></i> في السعودية</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar 3D -->
+    <div id="cartSidebar" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden">
+        <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white cart-3d">
+            <div class="p-5 bg-gradient-to-l from-purple-600 to-indigo-600 text-white flex justify-between items-center">
+                <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-shopping-bag"></i> سلة التسوق</h3>
+                <button onclick="toggleCart()" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div id="cartItems" class="p-5 h-[calc(100vh-220px)] overflow-y-auto">
+                <!-- Cart items will be loaded here -->
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-5 bg-gray-50 border-t">
+                <div class="flex justify-between mb-4">
+                    <span class="font-bold text-lg text-gray-700">الإجمالي:</span>
+                    <span id="cartTotal" class="font-black text-2xl text-3d">0 ر.س</span>
+                </div>
+                <button onclick="checkout()" class="w-full btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg">
+                    إتمام الشراء <i class="fas fa-arrow-left mr-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Quick View Modal 3D -->
+    <div id="productModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="card-3d bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div id="modalContent">
+                <!-- Modal content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal 3D -->
+    <div id="authModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="card-3d bg-white rounded-3xl max-w-md w-full">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 id="authTitle" class="text-3xl font-black text-3d">تسجيل الدخول</h3>
+                    <button onclick="toggleAuth()" class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition"><i class="fas fa-times text-xl text-gray-600"></i></button>
+                </div>
+                <div id="loginForm">
+                    <input type="email" placeholder="البريد الإلكتروني" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-4 text-lg">
+                    <input type="password" placeholder="كلمة المرور" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-6 text-lg">
+                    <button class="w-full btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg mb-6">تسجيل الدخول</button>
+                    <p class="text-center text-gray-500">ليس لديك حساب؟ <button onclick="toggleAuthForm()" class="text-purple-600 font-bold hover:underline">سجل الآن</button></p>
+                </div>
+                <div id="registerForm" class="hidden">
+                    <input type="text" placeholder="الاسم الكامل" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-4 text-lg">
+                    <input type="email" placeholder="البريد الإلكتروني" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-4 text-lg">
+                    <input type="tel" placeholder="رقم الجوال" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-4 text-lg">
+                    <input type="password" placeholder="كلمة المرور" class="input-3d w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none transition mb-6 text-lg">
+                    <button class="w-full btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg mb-6">إنشاء حساب</button>
+                    <p class="text-center text-gray-500">لديك حساب بالفعل؟ <button onclick="toggleAuthForm()" class="text-purple-600 font-bold hover:underline">سجل دخول</button></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification 3D -->
+    <div id="toast" class="fixed bottom-6 left-6 glass-3d bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-2xl shadow-2xl shadow-green-500/30 transform translate-y-full opacity-0 transition-all duration-500 z-50 flex items-center gap-3">
+        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <i class="fas fa-check text-xl"></i>
+        </div>
+        <span id="toastMessage" class="font-bold">تمت الإضافة للسلة</span>
+    </div>
+
+    <script>
+        // Get products from database (using global DB from database.js)
+        let products = DB.products.getActive();
+
+        let currentFilter = 'all';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            products = DB.products.getActive();
+            renderProducts();
+            startCountdown();
+            updateCartUI();
+            updateWishlistUI();
+        });
+        
+        // Get cart and wishlist from DB
+        function getCart() { return DB.cart.get(); }
+        function getWishlist() { return DB.wishlist.get(); }
+
+        // Render Products 3D
+        function renderProducts(filter = 'all') {
+            const grid = document.getElementById('productsGrid');
+            const filteredProducts = filter === 'all' ? products : products.filter(p => p.category === filter);
+            
+            grid.innerHTML = filteredProducts.map((product, index) => `
+                <div class="product-3d rounded-3xl overflow-hidden" data-category="${product.category}" style="animation-delay: ${index * 0.1}s">
+                    <div class="relative overflow-hidden">
+                        <img src="${product.image}" alt="${product.name}" class="product-img w-full h-56 object-cover transition-all duration-500">
+                        ${product.badge ? `<span class="badge-3d absolute top-4 right-4 ${product.badge === 'خصم' ? 'bg-gradient-to-r from-red-500 to-pink-500' : product.badge === 'جديد' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-purple-500 to-indigo-500'} text-white px-4 py-1.5 rounded-full text-sm font-bold">${product.badge}</span>` : ''}
+                        <div class="quick-actions-3d absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+                            <button onclick="quickView(${product.id})" class="w-12 h-12 bg-white rounded-xl shadow-xl flex items-center justify-center hover:bg-purple-600 hover:text-white transition transform hover:scale-110">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="addToWishlist(${product.id})" class="w-12 h-12 bg-white rounded-xl shadow-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition transform hover:scale-110">
+                                <i class="far fa-heart"></i>
+                            </button>
+                            <button onclick="addToCart({id: ${product.id}, name: '${product.name}', price: ${product.price}, image: '${product.image}'})" class="w-12 h-12 bg-white rounded-xl shadow-xl flex items-center justify-center hover:bg-purple-600 hover:text-white transition transform hover:scale-110">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-5 bg-white">
+                        <div class="flex items-center gap-1 star-3d text-yellow-400 text-sm mb-3">
+                            ${'<i class="fas fa-star"></i>'.repeat(product.rating)}
+                            ${product.rating < 5 ? '<i class="far fa-star text-gray-300"></i>'.repeat(5 - product.rating) : ''}
+                            <span class="text-gray-400 mr-2">(${Math.floor(Math.random() * 200) + 50})</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 truncate text-lg">${product.name}</h4>
+                        <div class="flex items-center gap-3 mt-3">
+                            <span class="text-purple-600 font-black text-xl">${product.price} ر.س</span>
+                            ${product.oldPrice ? `<span class="text-gray-400 line-through">${product.oldPrice} ر.س</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter Products
+        function filterProducts(category) {
+            currentFilter = category;
+            renderProducts(category);
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-l', 'from-purple-600', 'to-indigo-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-700');
+            });
+            event.target.classList.remove('bg-white', 'text-gray-700');
+            event.target.classList.add('bg-gradient-to-l', 'from-purple-600', 'to-indigo-600', 'text-white');
+        }
+
+        // Cart Functions
+        function addToCart(product) {
+            DB.cart.add(product, 1);
+            updateCartUI();
+            showToast('تمت الإضافة للسلة بنجاح');
+        }
+
+        function removeFromCart(productId) {
+            DB.cart.remove(productId);
+            updateCartUI();
+        }
+
+        function updateQuantity(productId, change) {
+            const cart = DB.cart.get();
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                const newQty = item.quantity + change;
+                if (newQty <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    DB.cart.update(productId, newQty);
+                    updateCartUI();
+                }
+            }
+        }
+
+        function updateCartUI() {
+            const cartItems = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            const cart = DB.cart.get();
+            const totalItems = DB.cart.getCount();
+            const totalPrice = DB.cart.getTotal();
+            
+            cartCount.textContent = totalItems;
+            cartTotal.textContent = `${totalPrice} ر.س`;
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-shopping-bag text-5xl text-gray-300"></i>
+                        </div>
+                        <p class="text-gray-500 text-lg">السلة فارغة</p>
+                        <p class="text-gray-400 text-sm mt-2">ابدأ التسوق الآن!</p>
+                    </div>
+                `;
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="card-3d flex gap-4 p-4 bg-gray-50 rounded-2xl mb-4">
+                        <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-cover rounded-xl shadow-lg">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800">${item.name}</h4>
+                            <p class="text-purple-600 font-bold text-lg">${item.price} ر.س</p>
+                            <div class="flex items-center gap-3 mt-3">
+                                <button onclick="updateQuantity('${item.id}', -1)" class="w-9 h-9 bg-white rounded-lg shadow flex items-center justify-center hover:bg-gray-100 transition font-bold">-</button>
+                                <span class="font-bold text-lg">${item.quantity}</span>
+                                <button onclick="updateQuantity('${item.id}', 1)" class="w-9 h-9 bg-white rounded-lg shadow flex items-center justify-center hover:bg-gray-100 transition font-bold">+</button>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 self-start">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function updateWishlistUI() {
+            document.getElementById('wishlistCount').textContent = DB.wishlist.get().length;
+        }
+
+        function toggleCart() {
+            const sidebar = document.getElementById('cartSidebar');
+            sidebar.classList.toggle('hidden');
+            document.body.style.overflow = sidebar.classList.contains('hidden') ? '' : 'hidden';
+        }
+
+        // Wishlist
+        function addToWishlist(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!DB.wishlist.has(productId)) {
+                DB.wishlist.add(product);
+                updateWishlistUI();
+                showToast('تمت الإضافة للمفضلة ❤️');
+            } else {
+                showToast('المنتج موجود بالفعل في المفضلة');
+            }
+        }
+
+        function toggleWishlist() {
+            const wishlist = DB.wishlist.get();
+            showToast(`لديك ${wishlist.length} منتجات في المفضلة`);
+        }
+
+        // Quick View
+        function quickView(productId) {
+            const product = products.find(p => p.id === productId);
+            const modal = document.getElementById('productModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="p-8">
+                        <img src="${product.image}" alt="${product.name}" class="w-full rounded-2xl shadow-2xl">
+                    </div>
+                    <div class="p-8 relative">
+                        <button onclick="closeQuickView()" class="absolute top-4 left-4 w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200 transition">
+                            <i class="fas fa-times text-gray-600"></i>
+                        </button>
+                        <span class="inline-block bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-bold mb-4">${product.category === 'electronics' ? 'إلكترونيات' : product.category === 'fashion' ? 'أزياء' : 'اكسسوارات'}</span>
+                        <h2 class="text-3xl font-black text-gray-800 mb-4">${product.name}</h2>
+                        <div class="flex items-center gap-2 star-3d text-yellow-400 mb-6">
+                            ${'<i class="fas fa-star"></i>'.repeat(product.rating)}
+                            <span class="text-gray-500 mr-2">(${Math.floor(Math.random() * 500) + 100} تقييم)</span>
+                        </div>
+                        <div class="flex items-center gap-4 mb-8">
+                            <span class="text-4xl font-black text-3d">${product.price} ر.س</span>
+                            ${product.oldPrice ? `<span class="text-xl text-gray-400 line-through">${product.oldPrice} ر.س</span>` : ''}
+                        </div>
+                        <p class="text-gray-600 text-lg leading-relaxed mb-8">منتج عالي الجودة من أفضل الماركات العالمية. يأتي مع ضمان سنة كاملة وشحن مجاني لجميع مناطق المملكة.</p>
+                        <div class="flex gap-4">
+                            <button onclick="addToCart({id: ${product.id}, name: '${product.name}', price: ${product.price}, image: '${product.image}'}); closeQuickView();" 
+                                class="flex-1 btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg">
+                                <i class="fas fa-cart-plus ml-2"></i> أضف للسلة
+                            </button>
+                            <button onclick="addToWishlist(${product.id})" class="w-16 h-16 border-2 border-gray-200 rounded-xl flex items-center justify-center hover:border-red-500 hover:text-red-500 transition">
+                                <i class="far fa-heart text-2xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeQuickView() {
+            const modal = document.getElementById('productModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        // Auth Modal
+        function toggleAuth() {
+            const modal = document.getElementById('authModal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+            document.body.style.overflow = modal.classList.contains('hidden') ? '' : 'hidden';
+        }
+
+        function toggleAuthForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const title = document.getElementById('authTitle');
+            
+            loginForm.classList.toggle('hidden');
+            registerForm.classList.toggle('hidden');
+            title.textContent = loginForm.classList.contains('hidden') ? 'إنشاء حساب' : 'تسجيل الدخول';
+        }
+
+        // Mobile Menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+            document.body.style.overflow = menu.classList.contains('hidden') ? '' : 'hidden';
+        }
+
+        // Countdown Timer
+        function startCountdown() {
+            let hours = 12, minutes = 45, seconds = 30;
+            
+            setInterval(() => {
+                seconds--;
+                if (seconds < 0) {
+                    seconds = 59;
+                    minutes--;
+                }
+                if (minutes < 0) {
+                    minutes = 59;
+                    hours--;
+                }
+                if (hours < 0) {
+                    hours = 23;
+                }
+                
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }, 1000);
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-full', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        // Checkout
+        function checkout() {
+            const cart = DB.cart.get();
+            if (cart.length === 0) {
+                showToast('السلة فارغة!');
+                return;
+            }
+            
+            // Show checkout modal
+            openCheckoutModal();
+        }
+        
+        function openCheckoutModal() {
+            const cart = DB.cart.get();
+            const totalPrice = DB.cart.getTotal();
+            const settings = DB.settings.getShipping();
+            const shippingCost = totalPrice >= settings.freeShippingMin ? 0 : settings.defaultCost;
+            
+            const modal = document.createElement('div');
+            modal.id = 'checkoutModal';
+            modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="card-3d bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <div class="p-6 bg-gradient-to-l from-purple-600 to-indigo-600 text-white rounded-t-3xl">
+                        <h3 class="text-2xl font-black">إتمام الطلب</h3>
+                    </div>
+                    <form onsubmit="submitOrder(event)" class="p-6">
+                        <h4 class="font-bold text-gray-800 mb-4">معلومات الشحن</h4>
+                        <input type="text" id="checkoutName" placeholder="الاسم الكامل *" required
+                            class="input-3d w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none mb-3">
+                        <input type="email" id="checkoutEmail" placeholder="البريد الإلكتروني *" required
+                            class="input-3d w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none mb-3">
+                        <input type="tel" id="checkoutPhone" placeholder="رقم الجوال *" required
+                            class="input-3d w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none mb-3">
+                        <textarea id="checkoutAddress" placeholder="العنوان بالتفصيل *" required rows="2"
+                            class="input-3d w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-purple-400 focus:outline-none mb-4 resize-none"></textarea>
+                        
+                        <h4 class="font-bold text-gray-800 mb-4">طريقة الدفع</h4>
+                        <div class="grid grid-cols-2 gap-3 mb-6">
+                            <label class="flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer hover:border-purple-400 transition">
+                                <input type="radio" name="payment" value="cod" checked class="accent-purple-600">
+                                <i class="fas fa-money-bill text-green-600"></i>
+                                <span>عند الاستلام</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer hover:border-purple-400 transition">
+                                <input type="radio" name="payment" value="visa" class="accent-purple-600">
+                                <i class="fab fa-cc-visa text-blue-600"></i>
+                                <span>بطاقة ائتمان</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer hover:border-purple-400 transition">
+                                <input type="radio" name="payment" value="mada" class="accent-purple-600">
+                                <span class="text-green-600 font-bold">مدى</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer hover:border-purple-400 transition">
+                                <input type="radio" name="payment" value="applepay" class="accent-purple-600">
+                                <i class="fab fa-apple-pay text-2xl"></i>
+                            </label>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-xl mb-6">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">المجموع الفرعي:</span>
+                                <span class="font-bold">${totalPrice} ر.س</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">الشحن:</span>
+                                <span class="font-bold ${shippingCost === 0 ? 'text-green-600' : ''}">${shippingCost === 0 ? 'مجاني' : shippingCost + ' ر.س'}</span>
+                            </div>
+                            <div class="border-t pt-2 mt-2 flex justify-between">
+                                <span class="font-bold text-lg">الإجمالي:</span>
+                                <span class="font-black text-xl text-purple-600">${totalPrice + shippingCost} ر.س</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <button type="submit" class="flex-1 btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold">
+                                <i class="fas fa-check ml-2"></i> تأكيد الطلب
+                            </button>
+                            <button type="button" onclick="closeCheckoutModal()" class="px-6 py-4 bg-gray-200 rounded-xl font-bold hover:bg-gray-300">
+                                إلغاء
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            toggleCart();
+        }
+        
+        function closeCheckoutModal() {
+            const modal = document.getElementById('checkoutModal');
+            if (modal) modal.remove();
+        }
+        
+        function submitOrder(e) {
+            e.preventDefault();
+            
+            const cart = DB.cart.get();
+            const totalPrice = DB.cart.getTotal();
+            const settings = DB.settings.getShipping();
+            const shippingCost = totalPrice >= settings.freeShippingMin ? 0 : settings.defaultCost;
+            
+            // Create or get customer
+            let customer = DB.customers.getByEmail(document.getElementById('checkoutEmail').value);
+            if (!customer) {
+                customer = DB.customers.register({
+                    name: document.getElementById('checkoutName').value,
+                    email: document.getElementById('checkoutEmail').value,
+                    phone: document.getElementById('checkoutPhone').value,
+                    address: document.getElementById('checkoutAddress').value,
+                    city: 'الرياض'
+                });
+            }
+            
+            // Create order
+            const order = DB.orders.create({
+                customerId: customer.id,
+                customerName: customer.name,
+                customerEmail: customer.email,
+                customerPhone: customer.phone,
+                products: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    qty: item.quantity,
+                    price: item.price,
+                    image: item.image
+                })),
+                subtotal: totalPrice,
+                shipping: shippingCost,
+                discount: 0,
+                total: totalPrice + shippingCost,
+                paymentMethod: document.querySelector('input[name="payment"]:checked').value,
+                paymentStatus: 'pending',
+                address: document.getElementById('checkoutAddress').value,
+                city: 'الرياض',
+                notes: ''
+            });
+            
+            // Clear cart
+            DB.cart.clear();
+            updateCartUI();
+            closeCheckoutModal();
+            
+            // Show success message
+            showOrderSuccess(order.id);
+        }
+        
+        function showOrderSuccess(orderId) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="card-3d bg-white rounded-3xl p-8 text-center max-w-md">
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                        <i class="fas fa-check text-white text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-800 mb-2">تم الطلب بنجاح! 🎉</h3>
+                    <p class="text-gray-600 mb-4">رقم طلبك هو: <span class="font-bold text-purple-600">#${orderId}</span></p>
+                    <p class="text-gray-500 text-sm mb-6">سيتم التواصل معك قريباً لتأكيد الطلب</p>
+                    <button onclick="this.closest('.fixed').remove()" class="btn-3d bg-gradient-to-l from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold">
+                        متابعة التسوق
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Newsletter
+        function subscribeNewsletter(e) {
+            e.preventDefault();
+            showToast('تم الاشتراك بنجاح! شكراً لك 🎉');
+            e.target.reset();
+        }
+
+        // Contact Form
+        function submitContact(e) {
+            e.preventDefault();
+            showToast('تم إرسال رسالتك بنجاح! ✉️');
+            e.target.reset();
+        }
+
+        // Load More Products
+        function loadMoreProducts() {
+            showToast('جاري تحميل المزيد...');
+        }
+
+        // Filter by Category
+        function filterByCategory(category) {
+            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                currentFilter = category;
+                renderProducts(category);
+            }, 500);
+        }
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+            if (query.length > 0) {
+                const grid = document.getElementById('productsGrid');
+                grid.innerHTML = filtered.map(product => `
+                    <div class="product-3d rounded-3xl overflow-hidden">
+                        <div class="relative overflow-hidden">
+                            <img src="${product.image}" alt="${product.name}" class="product-img w-full h-56 object-cover">
+                        </div>
+                        <div class="p-5 bg-white">
+                            <h4 class="font-bold text-gray-800 truncate text-lg">${product.name}</h4>
+                            <span class="text-purple-600 font-black text-xl">${product.price} ر.س</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                renderProducts(currentFilter);
+            }
+        });
+
+        // Close modals on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeQuickView();
+                document.getElementById('cartSidebar').classList.add('hidden');
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('mobileMenu').classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close on outside click
+        document.getElementById('cartSidebar').addEventListener('click', (e) => {
+            if (e.target.id === 'cartSidebar') toggleCart();
+        });
+
+        document.getElementById('productModal').addEventListener('click', (e) => {
+            if (e.target.id === 'productModal') closeQuickView();
+        });
+
+        document.getElementById('authModal').addEventListener('click', (e) => {
+            if (e.target.id === 'authModal') toggleAuth();
+        });
+
+        // 3D Tilt Effect for products
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.product-3d');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+                }
+            });
+        });
+
+        document.addEventListener('mouseleave', () => {
+            const cards = document.querySelectorAll('.product-3d');
+            cards.forEach(card => {
+                card.style.transform = '';
+            });
+        });
+    </script>
+</body>
+</html>
